@@ -18,6 +18,7 @@ class Settings(BaseSettings):
 
     # --- Anthropic ---
     ANTHROPIC_API_KEY: str = ""
+    ANTHROPIC_MAX_CONCURRENT: int = 15
 
     # --- Supabase ---
     SUPABASE_URL: str = ""
@@ -27,6 +28,9 @@ class Settings(BaseSettings):
     GOOGLE_CLIENT_ID: str = ""
     GOOGLE_CLIENT_SECRET: str = ""
     GOOGLE_REDIRECT_URI: str = ""
+
+    # --- Redis ---
+    REDIS_URL: str = "redis://localhost:6379"
 
     # --- Gamma ---
     GAMMA_API_KEY: str = ""
@@ -43,3 +47,22 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+
+def _validar_config() -> None:
+    """Verifica que las variables críticas estén configuradas."""
+    requeridas = {
+        "JWT_SECRET": settings.JWT_SECRET,
+        "ANTHROPIC_API_KEY": settings.ANTHROPIC_API_KEY,
+        "SUPABASE_URL": settings.SUPABASE_URL,
+        "SUPABASE_KEY": settings.SUPABASE_KEY,
+    }
+    faltantes = [k for k, v in requeridas.items() if not v]
+    if faltantes:
+        raise ValueError(
+            f"[Config] Variables de entorno críticas faltantes: {', '.join(faltantes)}. "
+            "Revisá tu archivo .env (ver .env.example)."
+        )
+
+
+_validar_config()

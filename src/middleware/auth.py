@@ -3,7 +3,7 @@ Dependency de FastAPI para verificación de JWT.
 Extrae el Bearer token del header Authorization y devuelve el usuario autenticado.
 """
 
-from fastapi import Depends, HTTPException, Request
+from fastapi import HTTPException, Request
 
 from src.services.auth_service import verificar_token
 from src.utils.logger import get_logger

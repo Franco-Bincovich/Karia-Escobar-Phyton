@@ -3,6 +3,8 @@ Registro central de herramientas del agente KarIA Escobar.
 TOOLS se pasa a la API de Anthropic. ejecutar_tool despacha la ejecución.
 """
 
+import asyncio
+
 from src.tools.tool_definitions import TOOLS
 from src.tools.excel_tools import generar_excel, analizar_excel_avanzado
 from src.tools.word_tools import generar_word
@@ -66,7 +68,6 @@ async def ejecutar_tool(nombre: str, params: dict, user_id: str):
     if nombre in FILE_TOOLS or nombre in USER_TOOLS:
         params["user_id"] = user_id
 
-    import asyncio
     result = fn(**params)
     if asyncio.iscoroutine(result):
         return await result

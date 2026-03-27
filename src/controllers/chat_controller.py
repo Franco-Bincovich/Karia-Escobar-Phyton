@@ -6,7 +6,6 @@ Solo orquestación — sin lógica de negocio.
 import asyncio
 
 from src.agent import ejecutar_agente
-from src.repositories import conversacion_repository as conv_repo
 from src.services import chat_service
 from src.utils.logger import get_logger
 
@@ -34,7 +33,7 @@ async def chat(mensaje: str, conversacion_id: str | None, user_id: str) -> dict:
     )
 
     resultado = await ejecutar_agente(mensaje, historial, user_id)
-    await conv_repo.update_messages(conversacion["id"], resultado["mensajes_actualizados"], user_id)
+    await chat_service.actualizar_mensajes(conversacion["id"], resultado["mensajes_actualizados"], user_id)
 
     # Generar título en background para conversaciones nuevas
     if not conversacion_id:
@@ -54,8 +53,7 @@ async def listar_conversaciones(user_id: str) -> dict:
         dict con conversaciones (list).
     """
     logger.info("Listando conversaciones userId=%s", user_id)
-    conversaciones = await conv_repo.find_by_user(user_id)
-    return {"conversaciones": conversaciones}
+    return await chat_service.listar_conversaciones(user_id)
 
 
 async def cargar_conversacion(conv_id: str, user_id: str) -> dict:

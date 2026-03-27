@@ -18,6 +18,8 @@ MAX_ITERACIONES = 10
 MODEL = "claude-sonnet-4-5-20250514"
 MAX_TOKENS = 4096
 
+_semaphore = asyncio.Semaphore(settings.ANTHROPIC_MAX_CONCURRENT)
+
 
 def _extraer_texto(contenido: list) -> str:
     """Extrae bloques de texto del content de Claude."""
@@ -97,7 +99,10 @@ async def ejecutar_loop(
             if tools:
                 kwargs["tools"] = tools
 
-            respuesta = client.messages.create(**kwargs)
+            if _semaphore.locked():
+                logger.debug("Semaphore lleno, request en cola userId=%s", user_id)
+            async with _semaphore:
+                respuesta = client.messages.create(**kwargs)
 
             logger.info(
                 "Respuesta de Claude iter=%d stop=%s userId=%s",

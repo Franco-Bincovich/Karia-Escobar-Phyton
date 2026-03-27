@@ -3,25 +3,15 @@ Routing + validación de entrada para /api/chat y /api/conversaciones.
 Sin lógica de negocio — todo pasa al controller.
 """
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
-from slowapi import Limiter
 
 from src.controllers import chat_controller
 from src.middleware.auth import get_current_user
+from src.middleware.rate_limiter import rate_limit_by_key
 
 chat_router = APIRouter(prefix="/api/chat", tags=["chat"])
 conversaciones_router = APIRouter(prefix="/api/conversaciones", tags=["conversaciones"])
-
-
-def _get_user_id_or_ip(request: Request) -> str:
-    """Extrae userId del JWT si está disponible, sino usa IP."""
-    if hasattr(request.state, "user") and request.state.user:
-        return request.state.user.get("userId", request.client.host)
-    return request.client.host
-
-
-chat_limiter = Limiter(key_func=_get_user_id_or_ip)
 
 
 class ChatRequest(BaseModel):
@@ -31,14 +21,18 @@ class ChatRequest(BaseModel):
 
 
 @chat_router.post("")
-@chat_limiter.limit("20/minute")
 async def chat(request: Request, body: ChatRequest, user: dict = Depends(get_current_user)):
     """
     POST /api/chat
     Body: { mensaje, conversacionId? }
-    Rate limit: 20 req/min por userId.
+    Rate limit: 20 req/min por userId (Redis o memoria).
     """
-    request.state.user = user
+    allowed = await rate_limit_by_key(f"chat:{user['userId']}", max_requests=20, window_seconds=60)
+    if not allowed:
+        raise HTTPException(
+            status_code=429,
+            detail={"error": True, "message": "Demasiados mensajes, esperá un momento", "code": "RATE_LIMIT_EXCEEDED"},
+        )
     return await chat_controller.chat(body.mensaje, body.conversacionId, user["userId"])
 
 

@@ -42,6 +42,35 @@ async def obtener_o_crear_conversacion(conv_id: str | None, user_id: str) -> dic
     return await conv_repo.create(user_id)
 
 
+async def actualizar_mensajes(conv_id: str, messages: list, user_id: str) -> dict:
+    """
+    Actualiza los mensajes de una conversación.
+
+    Args:
+        conv_id: UUID de la conversación.
+        messages: Array completo de mensajes actualizado.
+        user_id: UUID del usuario (ownership check).
+
+    Returns:
+        dict con la conversación actualizada.
+    """
+    return await conv_repo.update_messages(conv_id, messages, user_id)
+
+
+async def listar_conversaciones(user_id: str) -> dict:
+    """
+    Lista las últimas 20 conversaciones del usuario.
+
+    Args:
+        user_id: UUID del usuario.
+
+    Returns:
+        dict con conversaciones (list).
+    """
+    conversaciones = await conv_repo.find_by_user(user_id)
+    return {"conversaciones": conversaciones}
+
+
 async def generar_titulo_background(conv_id: str, user_id: str, primer_mensaje: str) -> None:
     """
     Genera un título corto con Claude y lo persiste. Fire-and-forget.

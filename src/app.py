@@ -13,7 +13,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from src.config.index import settings
 from src.middleware.error_handler import app_error_handler, generic_error_handler
 from src.routes.auth_routes import router as auth_router, limiter
-from src.routes.chat_routes import chat_router, chat_limiter, conversaciones_router
+from src.routes.chat_routes import chat_router, conversaciones_router
 from src.routes.documento_routes import router as documento_router
 from src.routes.funcionalidad_routes import router as funcionalidad_router
 from src.routes.integracion_routes import router as integracion_router
@@ -47,8 +47,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH"],
+    allow_headers=["Content-Type", "Authorization"],
 )
 
 # --- Error handlers ---
