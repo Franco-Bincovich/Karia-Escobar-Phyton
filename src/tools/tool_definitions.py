@@ -32,6 +32,11 @@ TOOLS_DOCUMENTOS = [
      "description": "Análisis estadístico completo de un archivo Excel subido: suma, promedio, min, max por columna.",
      "input_schema": {"type": "object", "required": ["nombreArchivo"], "properties": {
          "nombreArchivo": {"type": "string"}, "instruccion": {"type": "string"}}}},
+    {"name": "analizar_imagen",
+     "description": "Analiza imágenes y PDFs escaneados usando visión artificial. Puede extraer texto de documentos escaneados, interpretar gráficos, leer formularios y describir contenido visual. Usarlo cuando el usuario suba una imagen o un PDF que no tiene texto digital.",
+     "input_schema": {"type": "object", "required": ["archivo"], "properties": {
+         "archivo": {"type": "string", "description": "Nombre del archivo subido"},
+         "instruccion": {"type": "string", "description": "Qué analizar (opcional, default: análisis completo)"}}}},
 ]
 
 TOOLS_BUSQUEDA = [

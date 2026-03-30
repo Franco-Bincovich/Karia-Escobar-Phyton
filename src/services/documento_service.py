@@ -1,8 +1,9 @@
 """
 Parsea archivos subidos y devuelve su contenido como texto plano.
-Soporta: PDF, Excel (.xlsx/.xls), Word (.docx), CSV, TXT.
+Soporta: PDF, Excel (.xlsx/.xls), Word (.docx), CSV, TXT, imágenes (JPG/PNG/GIF/WEBP).
 """
 
+import base64
 import csv
 import os
 
@@ -20,6 +21,11 @@ TIPOS_SOPORTADOS = {
     ".docx": "word",
     ".csv": "csv",
     ".txt": "txt",
+    ".jpg": "imagen",
+    ".jpeg": "imagen",
+    ".png": "imagen",
+    ".gif": "imagen",
+    ".webp": "imagen",
 }
 
 
@@ -85,36 +91,36 @@ def _parsear_txt(ruta: str) -> str:
         return f.read()
 
 
+def _parsear_imagen(ruta: str) -> str:
+    """Convierte imagen a base64 para procesamiento con Claude Vision."""
+    with open(ruta, "rb") as f:
+        data = base64.standard_b64encode(f.read()).decode()
+    return f"[IMAGEN_BASE64:{data}]"
+
+
 _PARSERS = {
     "pdf": _parsear_pdf,
     "excel": _parsear_excel,
     "word": _parsear_word,
     "csv": _parsear_csv,
     "txt": _parsear_txt,
+    "imagen": _parsear_imagen,
 }
 
 
 async def parsear_documento(ruta_archivo: str, nombre_original: str) -> dict:
     """
     Parsea un documento según su extensión y devuelve su texto.
+    Para imágenes, devuelve base64 con tipo "imagen" para procesamiento con Claude Vision.
 
-    Args:
-        ruta_archivo: Ruta absoluta al archivo temporal.
-        nombre_original: Nombre original del archivo (para detectar extensión).
-
-    Returns:
-        dict con texto (str), tipo (str), truncado (bool).
-
-    Raises:
-        AppError: TIPO_NO_SOPORTADO (415) si la extensión no está soportada.
-        AppError: PARSE_ERROR (422) si falla la lectura.
+    Raises: TIPO_NO_SOPORTADO (415), PARSE_ERROR (422).
     """
     ext = os.path.splitext(nombre_original)[1].lower()
     tipo = TIPOS_SOPORTADOS.get(ext)
 
     if not tipo:
         raise AppError(
-            f"Tipo de archivo no soportado: {ext}. Formatos válidos: PDF, Excel, Word, CSV, TXT.",
+            f"Tipo de archivo no soportado: {ext}. Formatos válidos: PDF, Excel, Word, CSV, TXT, JPG, PNG, GIF, WEBP.",
             "TIPO_NO_SOPORTADO",
             415,
         )

@@ -16,6 +16,7 @@ from src.routes.auth_routes import router as auth_router, limiter
 from src.routes.chat_routes import chat_router, conversaciones_router
 from src.routes.documento_routes import router as documento_router
 from src.routes.funcionalidad_routes import router as funcionalidad_router
+from src.routes.file_routes import router as file_router
 from src.routes.integracion_routes import router as integracion_router
 from src.utils.app_error import AppError
 
@@ -61,6 +62,7 @@ app.include_router(auth_router)
 app.include_router(chat_router)
 app.include_router(conversaciones_router)
 app.include_router(documento_router)
+app.include_router(file_router)
 app.include_router(funcionalidad_router)
 app.include_router(integracion_router)
 

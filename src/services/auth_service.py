@@ -49,21 +49,7 @@ def _esta_bloqueado(email: str) -> bool:
 
 
 async def login(email: str, password: str) -> dict:
-    """
-    Autentica un usuario con email y contraseña.
-
-    Args:
-        email: Email del usuario.
-        password: Contraseña en texto plano.
-
-    Returns:
-        dict con token y user (id, email, nombre, rol, needs_password_reset).
-
-    Raises:
-        AppError: ACCOUNT_LOCKED (429) si se superaron 10 intentos fallidos.
-        AppError: INVALID_CREDENTIALS (401) si email/password incorrectos.
-        AppError: USER_INACTIVE (403) si el usuario está desactivado.
-    """
+    """Autentica con email/password. Retorna {token, user} o lanza AppError."""
     # 1. Verificar bloqueo por intentos fallidos (H3)
     if _esta_bloqueado(email):
         raise AppError(
@@ -111,20 +97,31 @@ async def login(email: str, password: str) -> dict:
     }
 
 
+async def cambiar_password(user_id: str, password_actual: str, password_nuevo: str) -> dict:
+    """Cambia la contraseña verificando la actual. Min 8 chars + 1 número."""
+    if len(password_nuevo) < 8 or not any(c.isdigit() for c in password_nuevo):
+        raise AppError(
+            "La nueva contraseña debe tener al menos 8 caracteres y 1 número",
+            "PASSWORD_INVALIDO",
+            400,
+        )
+
+    usuario = await user_repo.find_by_id(user_id)
+    if not usuario:
+        raise AppError("Usuario no encontrado", "USER_NOT_FOUND", 404)
+
+    if not bcrypt.checkpw(password_actual.encode(), usuario["password_hash"].encode()):
+        raise AppError("La contraseña actual es incorrecta", "PASSWORD_INCORRECTO", 401)
+
+    nuevo_hash = bcrypt.hashpw(password_nuevo.encode(), bcrypt.gensalt(rounds=12)).decode()
+    await user_repo.update(user_id, {"password_hash": nuevo_hash, "needs_password_reset": False})
+
+    logger.info("Password cambiado userId=%s", user_id)
+    return {"message": "Contraseña actualizada correctamente"}
+
+
 async def verificar_token(token: str) -> dict:
-    """
-    Verifica y decodifica un JWT.
-
-    Args:
-        token: JWT string.
-
-    Returns:
-        dict con userId, email y rol.
-
-    Raises:
-        AppError: TOKEN_EXPIRED (401) si el token venció.
-        AppError: TOKEN_INVALID (401) si el token es inválido.
-    """
+    """Verifica y decodifica un JWT. Retorna {userId, email, rol}."""
     try:
         payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[JWT_ALGORITHM])
         return {"userId": payload["userId"], "email": payload["email"], "rol": payload["rol"]}

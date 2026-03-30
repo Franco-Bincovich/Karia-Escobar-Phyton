@@ -15,6 +15,7 @@ logger = get_logger("funcionalidadService")
 # Patrones que indican intentos de prompt injection o jailbreak.
 _I = re.IGNORECASE
 BLOCKLIST_PROMPT = [
+    # --- Patrones del JS original (25 únicos) ---
     re.compile(r"ignor[aá]", _I), re.compile(r"ignore", _I),
     re.compile(r"override", _I), re.compile(r"instrucciones anteriores", _I),
     re.compile(r"previous instructions", _I), re.compile(r"jailbreak", _I),
@@ -28,6 +29,13 @@ BLOCKLIST_PROMPT = [
     re.compile(r"act[uú]a como", _I), re.compile(r"fing[ií] que", _I),
     re.compile(r"olvid[aá] todo", _I), re.compile(r"ignor[aá] todo", _I),
     re.compile(r"sin restricciones", _I),
+    # --- Patrones adicionales para cobertura 35+ ---
+    re.compile(r"do anything now", _I), re.compile(r"ignore previous", _I),
+    re.compile(r"you are now", _I), re.compile(r"ahora sos", _I),
+    re.compile(r"no rules", _I), re.compile(r"sin reglas", _I),
+    re.compile(r"unrestricted", _I), re.compile(r"modo desarrollador", _I),
+    re.compile(r"developer mode", _I), re.compile(r"reset your", _I),
+    re.compile(r"reinici[aá] tu", _I), re.compile(r"cambi[aá] de rol", _I),
 ]
 
 _FUNC_BASE = {

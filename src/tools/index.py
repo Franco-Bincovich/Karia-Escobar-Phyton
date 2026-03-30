@@ -15,10 +15,11 @@ from src.tools.google.gmail_tools import leer_gmail, enviar_gmail
 from src.tools.google.calendar_tools import leer_calendar, crear_evento
 from src.tools.google.drive_tools import buscar_drive
 from src.tools.gamma_tools import generar_presentacion
+from src.tools.vision_tools import analizar_imagen
 from src.utils.app_error import AppError
 
 # Tools que generan archivos — userId prefija el nombre (anti-IDOR)
-FILE_TOOLS = {"generar_excel", "generar_word"}
+FILE_TOOLS = {"generar_excel", "generar_word", "analizar_imagen"}
 
 # Tools que necesitan userId para credenciales Google/API
 USER_TOOLS = {
@@ -43,6 +44,7 @@ _MAPA_TOOLS = {
     "buscar_normativa": buscar_normativa,
     "buscar_ordenanzas": buscar_ordenanzas,
     "generar_presentacion": generar_presentacion,
+    "analizar_imagen": analizar_imagen,
 }
 
 
